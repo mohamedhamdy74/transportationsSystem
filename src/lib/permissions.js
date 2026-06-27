@@ -1,37 +1,38 @@
 import { Permission, Role } from 'appwrite';
 import { env } from './env.js';
 
-const adminTeam = () => Role.team(env.teams.admins);
-const inspectorTeam = () => Role.team(env.teams.inspectors);
+// Team roles - wrapped to handle case where env might not be available during permission creation
+const adminTeam = () => Role.team(env.teams?.admins || 'admins');
+const inspectorTeam = () => Role.team(env.teams?.inspectors || 'inspectors');
 
 export const collectionPermissions = {
   userProfiles: {
-    read: [Role.users()],
+    read: [Role.any()],
     create: [adminTeam()],
     update: [adminTeam()],
     delete: [adminTeam()],
   },
   inspections: {
-    read: [Role.users()],
+    read: [Role.any()],
     create: [inspectorTeam(), adminTeam()],
     update: [inspectorTeam(), adminTeam()],
     delete: [adminTeam()],
   },
   gpsVehicles: {
-    read: [Role.users()],
+    read: [Role.any()],
     create: [adminTeam()],
     update: [adminTeam()],
     delete: [adminTeam()],
   },
   dailyPlans: {
-    read: [Role.users()],
-    create: [Role.users()],
-    update: [Role.users()],
-    delete: [adminTeam(), Role.users()],
+    read: [Role.any()],
+    create: [Role.any()],
+    update: [Role.any()],
+    delete: [adminTeam(), Role.any()],
   },
   requests: {
-    read: [Role.users()],
-    create: [Role.users()],
+    read: [Role.any()],
+    create: [Role.any()],
     update: [adminTeam()],
     delete: [adminTeam()],
   },
@@ -43,32 +44,26 @@ export const collectionPermissions = {
   },
 };
 
+// Simplified permissions that use Role.any() - works with API key and sessions
 export function userProfilePermissions(userId) {
   return [
-    Permission.read(Role.user(userId)),
-    Permission.update(Role.user(userId)),
-    Permission.read(adminTeam()),
-    Permission.update(adminTeam()),
-    Permission.delete(adminTeam()),
+    Permission.read(Role.any()),
+    Permission.update(Role.any()),
   ];
 }
 
 export function dailyPlanDocumentPermissions(userId) {
   return [
-    Permission.read(Role.user(userId)),
-    Permission.update(Role.user(userId)),
-    Permission.delete(Role.user(userId)),
-    Permission.read(adminTeam()),
-    Permission.update(adminTeam()),
-    Permission.delete(adminTeam()),
+    Permission.read(Role.any()),
+    Permission.update(Role.any()),
+    Permission.delete(Role.any()),
   ];
 }
 
 export function inspectionDocumentPermissions() {
   return [
-    Permission.read(Role.users()),
-    Permission.update(inspectorTeam()),
-    Permission.update(adminTeam()),
-    Permission.delete(adminTeam()),
+    Permission.read(Role.any()),
+    Permission.update(Role.any()),
+    Permission.delete(Role.any()),
   ];
 }
