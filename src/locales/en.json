@@ -1,0 +1,68 @@
+{
+  "app_title": "Transportations System",
+  "login": {
+    "welcome": "Welcome to Transportations System",
+    "subtitle": "Please log in to continue",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Invalid username or password"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "company": "Company",
+    "inspector": "Inspector",
+    "gps": "GPS Tracker",
+    "excel": "Excel Export",
+    "logout": "Logout"
+  },
+  "admin": {
+    "stats": {
+      "companies": "Total Companies",
+      "vehicles": "Total Vehicles",
+      "inspections": "Today's Inspections",
+      "passengers": "Passengers Transported"
+    },
+    "tabs": {
+      "companies": "Companies & Passengers",
+      "accounts": "System Accounts",
+      "requests": "Pending Requests",
+      "inspections": "Inspections Log"
+    }
+  },
+  "company": {
+    "stats": {
+      "vehicles": "Our Vehicles",
+      "plans": "Today's Plans",
+      "requests": "Pending Requests"
+    },
+    "tabs": {
+      "daily": "Daily Plan",
+      "vehicles": "Our Vehicles",
+      "requests": "Requests"
+    }
+  },
+  "inspector": {
+    "stats": {
+      "total": "Total Inspections",
+      "passed": "Passed",
+      "pending": "Pending"
+    }
+  },
+  "common": {
+    "search": "Search...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    }
+  }
+}

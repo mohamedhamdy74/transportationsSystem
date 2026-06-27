@@ -1,0 +1,68 @@
+{
+  "app_title": "نظام النقل",
+  "login": {
+    "welcome": "مرحباً بك في نظام النقل",
+    "subtitle": "الرجاء تسجيل الدخول للمتابعة",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "submit": "دخول",
+    "error": "اسم المستخدم أو كلمة المرور غير صحيحة"
+  },
+  "nav": {
+    "dashboard": "لوحة القيادة",
+    "admin": "الإدارة",
+    "company": "الشركة",
+    "inspector": "الفاحص",
+    "gps": "تتبع GPS",
+    "excel": "مركز التصدير",
+    "logout": "تسجيل الخروج"
+  },
+  "admin": {
+    "stats": {
+      "companies": "إجمالي الشركات",
+      "vehicles": "إجمالي السيارات",
+      "inspections": "عمليات الفحص اليوم",
+      "passengers": "الركاب المنقولين"
+    },
+    "tabs": {
+      "companies": "الشركات والركاب",
+      "accounts": "حسابات النظام",
+      "requests": "الطلبات المعلقة",
+      "inspections": "سجل الفحوصات"
+    }
+  },
+  "company": {
+    "stats": {
+      "vehicles": "سياراتنا",
+      "plans": "خطط التشغيل اليوم",
+      "requests": "الطلبات المعلقة"
+    },
+    "tabs": {
+      "daily": "الخطة اليومية",
+      "vehicles": "المركبات الخاصة بنا",
+      "requests": "الطلبات"
+    }
+  },
+  "inspector": {
+    "stats": {
+      "total": "إجمالي الفحوصات",
+      "passed": "تم الفحص",
+      "pending": "قيد الفحص"
+    }
+  },
+  "common": {
+    "search": "بحث...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار",
+      "approved": "تمت الموافقة",
+      "rejected": "مرفوض"
+    }
+  }
+}
