@@ -434,7 +434,7 @@ class DatabaseService {
       inspectedBy: ins.inspectedBy || '',
       remarks: ins.remarks || ''
     };
-    await this._writeAppwrite('inspections', id, newIns, inspectionDocumentPermissions());
+    await this._writeAppwrite('inspections', id, newIns);
     const all = await this.getInspections();
     const latest = getLatestInspectionForPlate(all, `${newIns.no} ${newIns.letters}`);
     await this.syncGpsVehicleStatus(
@@ -610,9 +610,7 @@ class DatabaseService {
       passengers: plan.passengers || JSON.stringify([]),
       shift: plan.shift || 'day'
     };
-    const user = getCurrentUser();
-    const planPermissions = user?.userId ? dailyPlanDocumentPermissions(user.userId) : null;
-    await this._writeAppwrite('dailyPlans', id, newPlan, planPermissions);
+    await this._writeAppwrite('dailyPlans', id, newPlan);
     return { ...newPlan, notInspected: !hasInspection };
   }
 
