@@ -482,10 +482,13 @@ export default function AdminDashboard({ defaultTab = 'overview' }) {
               return (
                 <div key={req.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 flex-wrap shadow-sm">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    req.request_type === 'add_vehicle' ? 'bg-emerald-100' : 'bg-rose-100'
+                    req.request_type === 'add_vehicle' ? 'bg-emerald-100' : 
+                    req.request_type === 'edit_vehicle' ? 'bg-indigo-100' : 'bg-rose-100'
                   }`}>
                     {req.request_type === 'add_vehicle' ? (
                       <Plus className="w-5 h-5 text-emerald-600" />
+                    ) : req.request_type === 'edit_vehicle' ? (
+                      <Edit2 className="w-5 h-5 text-indigo-600" />
                     ) : (
                       <Trash2 className="w-5 h-5 text-rose-600" />
                     )}
@@ -495,6 +498,7 @@ export default function AdminDashboard({ defaultTab = 'overview' }) {
                       <span>
                         {req.request_type === 'add_vehicle' && 'طلب إضافة سيارة'}
                         {req.request_type === 'delete_vehicle' && 'طلب حذف سيارة'}
+                        {req.request_type === 'edit_vehicle' && 'طلب تعديل سيارة (GPS)'}
                         {req.request_type === 'delete_passenger' && `طلب موافقة على حذف راكب: ${passengerName}`}
                       </span>
                       {isUninspectedAdd && (

@@ -462,7 +462,7 @@ class DatabaseService {
 
   async addGpsVehicle(veh) {
     const id = `gps_${Date.now()}`;
-    const newVeh = { id, company: veh.company, username: veh.username || '', password: veh.password || '', carType: veh.carType || '', carNo: veh.carNo, comments: veh.comments || 'Running' };
+    const newVeh = { id, company: veh.company, username: veh.username || '', password: veh.password || '', imei: veh.imei || '', carType: veh.carType || '', carNo: veh.carNo, comments: veh.comments || 'Running' };
     await this._writeAppwrite('gpsVehicles', id, newVeh);
     return newVeh;
   }
@@ -474,8 +474,9 @@ class DatabaseService {
     const updated = {
       ...list[idx],
       company: veh.company || list[idx].company,
-      username: veh.username || list[idx].username,
-      password: veh.password || list[idx].password,
+      username: veh.username !== undefined ? veh.username : list[idx].username,
+      password: veh.password !== undefined ? veh.password : list[idx].password,
+      imei: veh.imei !== undefined ? veh.imei : list[idx].imei,
       carType: veh.carType || list[idx].carType,
       carNo: veh.carNo || list[idx].carNo,
       comments: veh.comments || list[idx].comments,
@@ -661,6 +662,20 @@ class DatabaseService {
         await this.deleteGpsVehicleByPlate(req.car_no, req.company);
         await this.deleteDailyPlansByPlate(req.car_no, req.company);
         await this.deleteRequest(requestId);
+        return;
+      }
+      if (req.request_type === 'edit_vehicle') {
+        const gpsList = await this.getGpsVehicles();
+        const v = gpsList.find(x => platesMatch(x.carNo, req.car_no) && companiesMatch(x.company, req.company));
+        if (v) {
+          await this.updateGpsVehicle(v.id, {
+            username: req.gps_username || '',
+            password: req.gps_password || '',
+            carType: req.car_type || ''
+          });
+        }
+        req.status = 'approved';
+        await this._writeAppwrite('requests', requestId, req);
         return;
       }
       if (req.request_type === 'delete_passenger') {

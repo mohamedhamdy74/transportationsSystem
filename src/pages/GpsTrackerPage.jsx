@@ -5,7 +5,8 @@ import { db } from '../lib/db.js';
 import { exportGpsVehicles, importGpsVehicles } from '../lib/excelUtils.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTranslation } from 'react-i18next';
-import { Upload, Download, Plus, Search, MapPin, CheckCircle2, XCircle, Trash2, Loader2 } from 'lucide-react';
+import { Upload, Download, Plus, Search, MapPin, CheckCircle2, XCircle, Trash2, Edit2, Loader2 } from 'lucide-react';
+import { getLatestInspectionForPlate } from '../lib/db.js';
 
 function StatusBadge({ status, isRtl }) {
   const map = {
@@ -32,11 +33,24 @@ export default function GpsTrackerPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [importStatus, setImportStatus] = useState(null);
-  const [form, setForm] = useState({ company: '', username: '', password: '', carType: '', carNo: '', comments: 'Running' });
+  const [inspections, setInspections] = useState([]);
+  const [form, setForm] = useState({ id: null, company: '', username: '', password: '', imei: '', carType: '', carNo: '', comments: 'Running' });
 
   const loadData = async () => {
     const list = await db.getGpsVehicles();
-    setVehicles(list);
+    const ins = await db.getInspections();
+    setInspections(ins);
+
+    // Attach dynamic status based on inspection if available
+    const mapped = list.map(v => {
+      const latest = getLatestInspectionForPlate(ins, v.carNo);
+      let dynamicStatus = v.comments;
+      if (latest) {
+        dynamicStatus = latest.exitStatus === 'Till now' ? 'Running' : 'Out';
+      }
+      return { ...v, dynamicStatus };
+    });
+    setVehicles(mapped);
   };
 
   useEffect(() => { loadData(); }, []);
@@ -46,16 +60,20 @@ export default function GpsTrackerPage() {
   const filtered = vehicles.filter(v => {
     const matchSearch = !search || v.carNo.toLowerCase().includes(search.toLowerCase()) || v.company.toLowerCase().includes(search.toLowerCase()) || v.username.toLowerCase().includes(search.toLowerCase());
     const matchCompany = !filterCompany || v.company === filterCompany;
-    const matchStatus = !filterStatus || v.comments === filterStatus;
+    const matchStatus = !filterStatus || v.dynamicStatus === filterStatus;
     return matchSearch && matchCompany && matchStatus;
   });
 
   const handleAdd = async () => {
     if (!form.company || !form.carNo) return;
-    await db.addGpsVehicle(form);
+    if (form.id) {
+      await db.updateGpsVehicle(form.id, form);
+    } else {
+      await db.addGpsVehicle(form);
+    }
     await loadData();
     setShowAddModal(false);
-    setForm({ company: '', username: '', password: '', carType: '', carNo: '', comments: 'Running' });
+    setForm({ id: null, company: '', username: '', password: '', imei: '', carType: '', carNo: '', comments: 'Running' });
   };
 
   const handleDelete = async (id) => {
@@ -97,8 +115,8 @@ export default function GpsTrackerPage() {
     }
   };
 
-  const running = vehicles.filter(v => v.comments === 'Running').length;
-  const out = vehicles.filter(v => v.comments !== 'Running').length;
+  const running = vehicles.filter(v => v.dynamicStatus === 'Running').length;
+  const out = vehicles.filter(v => v.dynamicStatus !== 'Running').length;
 
   return (
     <Layout>
@@ -128,7 +146,7 @@ export default function GpsTrackerPage() {
               {isRtl ? 'تصدير Excel' : 'Export Excel'}
             </button>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => { setForm({ id: null, company: '', username: '', password: '', imei: '', carType: '', carNo: '', comments: 'Running' }); setShowAddModal(true); }}
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-md shadow-indigo-500/20"
             >
               <Plus className="w-4 h-4" />
@@ -206,6 +224,7 @@ export default function GpsTrackerPage() {
                   <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'الشركة' : 'Company'}</th>
                   <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'اسم المستخدم' : 'Username'}</th>
                   <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'كلمة المرور' : 'Password'}</th>
+                  <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>IMEI</th>
                   <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'نوع السيارة' : 'Car Type'}</th>
                   <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'رقم اللوحة' : 'Plate No.'}</th>
                   <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'الحالة' : 'Status'}</th>
@@ -219,14 +238,15 @@ export default function GpsTrackerPage() {
                     <td className="px-4 py-3 text-gray-700 text-xs max-w-[120px] truncate font-medium">{v.company}</td>
                     <td className="px-4 py-3 text-indigo-600 text-xs font-mono">{v.username}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs"><MaskedPassword value={v.password} /></td>
+                    <td className="px-4 py-3 text-gray-500 text-xs font-mono">{v.imei || '-'}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{v.carType}</td>
                     <td className="px-4 py-3 text-gray-900 font-bold text-xs">{v.carNo}</td>
                     <td className="px-4 py-3">
                       <select
-                        value={v.comments}
+                        value={v.dynamicStatus}
                         onChange={e => handleStatusUpdate(v.id, e.target.value)}
                         className={`text-xs rounded-lg px-2 py-1.5 border focus:outline-none cursor-pointer font-medium ${
-                          v.comments === 'Running'
+                          v.dynamicStatus === 'Running'
                             ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                             : 'bg-rose-50 border-rose-200 text-rose-700'
                         }`}
@@ -237,12 +257,20 @@ export default function GpsTrackerPage() {
                       </select>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleDelete(v.id)}
-                        className="text-rose-400 hover:text-rose-600 transition-colors p-1.5 rounded-lg hover:bg-rose-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => { setForm({ ...v }); setShowAddModal(true); }}
+                          className="text-indigo-400 hover:text-indigo-600 transition-colors p-1.5 rounded-lg hover:bg-indigo-50"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(v.id)}
+                          className="text-rose-400 hover:text-rose-600 transition-colors p-1.5 rounded-lg hover:bg-rose-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -266,12 +294,13 @@ export default function GpsTrackerPage() {
         {showAddModal && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
             <div className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h3 className="text-gray-900 font-bold text-lg mb-5">{isRtl ? 'إضافة سيارة GPS جديدة' : 'Add New GPS Vehicle'}</h3>
+              <h3 className="text-gray-900 font-bold text-lg mb-5">{form.id ? (isRtl ? 'تعديل سيارة GPS' : 'Edit GPS Vehicle') : (isRtl ? 'إضافة سيارة GPS جديدة' : 'Add New GPS Vehicle')}</h3>
               <div className="space-y-4">
                 {[
                   { label: isRtl ? 'الشركة *' : 'Company *', key: 'company', placeholder: 'H H C' },
                   { label: isRtl ? 'اسم المستخدم' : 'Username', key: 'username', placeholder: 'GPS Username' },
                   { label: isRtl ? 'كلمة المرور' : 'Password', key: 'password', placeholder: 'GPS Password' },
+                  { label: 'IMEI', key: 'imei', placeholder: 'IMEI Number' },
                   { label: isRtl ? 'نوع السيارة' : 'Car Type', key: 'carType', placeholder: 'Microbus' },
                   { label: isRtl ? 'رقم اللوحة *' : 'Plate No. *', key: 'carNo', placeholder: 'ص ه ع 8594' },
                 ].map(f => (
@@ -300,7 +329,7 @@ export default function GpsTrackerPage() {
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={handleAdd} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-bold transition-colors">
-                  {t('common.add')}
+                  {form.id ? t('common.save') : t('common.add')}
                 </button>
                 <button onClick={() => setShowAddModal(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold transition-colors">
                   {t('common.cancel')}
