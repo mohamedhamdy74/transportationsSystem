@@ -72,7 +72,9 @@ function PassengerModal({ plan, pendingDeletions, onRequestDelete, onClose, isRt
               <div key={i} className={`flex items-center gap-3 bg-gray-50 border rounded-xl px-3 py-2.5 ${pending ? 'border-amber-200' : 'border-gray-200'}`}>
                 <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold shrink-0">{i + 1}</span>
                 <span className="flex-1 text-sm text-gray-800">{name}</span>
+                {pending ? (
                   <span className="flex items-center gap-1 text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-1 rounded-lg font-medium"><Hourglass className="w-3.5 h-3.5" /> {isRtl ? 'بانتظار الموافقة' : 'Pending approval'}</span>
+                ) : (
                   <button onClick={() => removePassenger(name, i)} className="text-rose-400 hover:text-rose-600 p-1">
                     <X className="w-4 h-4" />
                   </button>
