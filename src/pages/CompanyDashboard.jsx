@@ -7,7 +7,7 @@ import PlateInput from '../components/PlateInput.jsx';
 import { useTranslation } from 'react-i18next';
 import {
   Upload, Download, Plus, Users, Car, Sun, Moon, Send, AlertTriangle,
-  CheckCircle2, XCircle, X, Route, User, CalendarDays, Trash2
+  CheckCircle2, XCircle, X, Route, User, CalendarDays, Trash2, Hourglass
 } from 'lucide-react';
 
 function PassengerModal({ plan, pendingDeletions, onRequestDelete, onClose, isRtl }) {
@@ -72,9 +72,7 @@ function PassengerModal({ plan, pendingDeletions, onRequestDelete, onClose, isRt
               <div key={i} className={`flex items-center gap-3 bg-gray-50 border rounded-xl px-3 py-2.5 ${pending ? 'border-amber-200' : 'border-gray-200'}`}>
                 <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs flex items-center justify-center font-bold shrink-0">{i + 1}</span>
                 <span className="flex-1 text-sm text-gray-800">{name}</span>
-                {pending ? (
-                  <span className="text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-1 rounded-lg font-medium">⏳ {isRtl ? 'بانتظار الموافقة' : 'Pending approval'}</span>
-                ) : (
+                  <span className="flex items-center gap-1 text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-1 rounded-lg font-medium"><Hourglass className="w-3.5 h-3.5" /> {isRtl ? 'بانتظار الموافقة' : 'Pending approval'}</span>
                   <button onClick={() => removePassenger(name, i)} className="text-rose-400 hover:text-rose-600 p-1">
                     <X className="w-4 h-4" />
                   </button>
@@ -131,7 +129,7 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
   const [importStatus, setImportStatus] = useState(null);
 
   const [planForm, setPlanForm] = useState({
-    carType: 'Microbus', plateNumber: '', driverName: '', route: '', passengerQnt: 0,
+    carType: 'Microbus', plateNumber: '', driverName: '', driverPhone: '', gpsUsername: '', gpsPassword: '', route: '', passengerQnt: 0,
     date: new Date().toISOString().split('T')[0], shift: 'day'
   });
 
@@ -152,7 +150,7 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
       await db.addDailyPlan({ ...planForm, company: user?.company });
       await loadData();
       setShowPlanModal(false);
-      setPlanForm({ carType: 'Microbus', plateNumber: '', driverName: '', route: '', passengerQnt: 0, date: new Date().toISOString().split('T')[0], shift: 'day' });
+      setPlanForm({ carType: 'Microbus', plateNumber: '', driverName: '', driverPhone: '', gpsUsername: '', gpsPassword: '', route: '', passengerQnt: 0, date: new Date().toISOString().split('T')[0], shift: 'day' });
     } catch (err) {
       setValidationError(err.message);
     }
@@ -409,8 +407,8 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
                       </td>
                       <td className="px-4 py-3">
                         {isPendingDelete ? (
-                          <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg font-medium">
-                            ⏳ {isRtl ? 'بانتظار الموافقة' : 'Pending approval'}
+                          <span className="flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg font-medium w-fit">
+                            <Hourglass className="w-3 h-3" /> {isRtl ? 'بانتظار الموافقة' : 'Pending approval'}
                           </span>
                         ) : (
                           <button
@@ -506,12 +504,12 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
                       <p className="text-gray-500 text-xs mt-0.5">{displaySubtitle}</p>
                       <p className="text-gray-400 text-xs mt-0.5">{new Date(req.created_at).toLocaleString(isRtl ? 'ar-EG' : 'en-US')}</p>
                     </div>
-                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
+                    <span className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border ${
                       req.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                       req.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                       'bg-rose-50 text-rose-700 border-rose-200'
                     }`}>
-                      {req.status === 'pending' ? '⏳' : req.status === 'approved' ? '✓' : '✗'} {req.status}
+                      {req.status === 'pending' ? <Hourglass className="w-3.5 h-3.5" /> : req.status === 'approved' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />} {req.status}
                     </span>
                   </div>
                 );
@@ -529,44 +527,69 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
 
       {/* Add Plan Modal */}
       {showPlanModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 font-cairo" onClick={() => { setShowPlanModal(false); setValidationError(null); }} dir={isRtl ? 'rtl' : 'ltr'}>
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-gray-900 font-bold text-lg mb-5">{isRtl ? 'إضافة رحلة جديدة' : 'Add New Trip'}</h3>
-            <div className="space-y-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 font-cairo p-4 overflow-y-auto" onClick={() => { setShowPlanModal(false); setValidationError(null); }} dir={isRtl ? 'rtl' : 'ltr'}>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-2xl mx-auto shadow-2xl my-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-gray-900 font-bold text-lg">{isRtl ? 'إضافة سيارة / رحلة جديدة' : 'Add New Vehicle / Trip'}</h3>
+              <button onClick={() => { setShowPlanModal(false); setValidationError(null); }} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2 flex flex-col items-center p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <label className="block text-xs font-semibold text-gray-600 mb-3 text-center w-full">{isRtl ? 'رقم لوحة السيارة *' : 'Plate Number *'}</label>
+                <PlateInput value={planForm.plateNumber} onChange={val => setPlanForm(p => ({ ...p, plateNumber: val }))} />
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'الوردية *' : 'Shift *'}</label>
                 <select value={planForm.shift} onChange={e => setPlanForm(p => ({ ...p, shift: e.target.value }))}
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400">
-                  <option value="day">☀️ {isRtl ? 'وردية نهارية' : 'Day Shift'}</option>
-                  <option value="night">🌙 {isRtl ? 'وردية ليلية' : 'Night Shift'}</option>
+                  <option value="day">{isRtl ? 'وردية نهارية' : 'Day Shift'}</option>
+                  <option value="night">{isRtl ? 'وردية ليلية' : 'Night Shift'}</option>
                 </select>
               </div>
+              
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'تاريخ اضافة العربية' : 'Vehicle Addition Date'}</label>
                 <input type="date" value={planForm.date} onChange={e => setPlanForm(p => ({ ...p, date: e.target.value }))}
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
               </div>
-              <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <label className="block text-xs font-semibold text-gray-600 mb-3 text-center w-full">{isRtl ? 'رقم لوحة السيارة *' : 'Plate Number *'}</label>
-                <PlateInput value={planForm.plateNumber} onChange={val => setPlanForm(p => ({ ...p, plateNumber: val }))} />
-              </div>
-              {[
-                { label: isRtl ? 'نوع السيارة' : 'Car Type', key: 'carType', placeholder: 'Microbus / Minibus' },
-                { label: isRtl ? 'اسم السائق' : 'Driver Name', key: 'driverName', placeholder: isRtl ? 'اسم السائق' : 'Driver name' },
-                { label: isRtl ? 'خط السير' : 'Route', key: 'route', placeholder: isRtl ? 'مثال: Aswan' : 'e.g. Aswan' },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">{f.label}</label>
-                  <input value={planForm[f.key]} onChange={e => setPlanForm(p => ({ ...p, [f.key]: e.target.value }))}
-                    placeholder={f.placeholder}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-emerald-400" />
-                </div>
-              ))}
+
               <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'نوع السيارة' : 'Car Type'}</label>
+                <input value={planForm.carType} onChange={e => setPlanForm(p => ({ ...p, carType: e.target.value }))} placeholder="Microbus / Minibus" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'خط السير' : 'Route'}</label>
+                <input value={planForm.route} onChange={e => setPlanForm(p => ({ ...p, route: e.target.value }))} placeholder={isRtl ? 'مثال: Aswan' : 'e.g. Aswan'} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'اسم السائق' : 'Driver Name'}</label>
+                <input value={planForm.driverName} onChange={e => setPlanForm(p => ({ ...p, driverName: e.target.value }))} placeholder={isRtl ? 'اسم السائق' : 'Driver name'} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'رقم هاتف السائق' : 'Driver Phone'}</label>
+                <input type="tel" value={planForm.driverPhone} onChange={e => setPlanForm(p => ({ ...p, driverPhone: e.target.value }))} placeholder={isRtl ? 'رقم الهاتف' : 'Phone number'} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'اسم مستخدم التتبع (GPS Username)' : 'GPS Username'}</label>
+                <input value={planForm.gpsUsername} onChange={e => setPlanForm(p => ({ ...p, gpsUsername: e.target.value }))} placeholder={isRtl ? 'اسم مستخدم التتبع' : 'GPS Username'} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'كلمة مرور التتبع (GPS Password)' : 'GPS Password'}</label>
+                <input type="password" value={planForm.gpsPassword} onChange={e => setPlanForm(p => ({ ...p, gpsPassword: e.target.value }))} placeholder={isRtl ? 'كلمة المرور' : 'Password'} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+              </div>
+
+              <div className="md:col-span-2">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">{isRtl ? 'عدد الركاب' : 'Passenger Count'}</label>
-                <input type="number" min="0" value={planForm.passengerQnt}
-                  onChange={e => setPlanForm(p => ({ ...p, passengerQnt: parseInt(e.target.value) || 0 }))}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
+                <input type="number" min="0" value={planForm.passengerQnt} onChange={e => setPlanForm(p => ({ ...p, passengerQnt: parseInt(e.target.value) || 0 }))} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-emerald-400" />
               </div>
             </div>
 
@@ -581,8 +604,7 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
               <button onClick={handleAddPlan} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-bold transition-colors">
                 {isRtl ? 'إضافة الرحلة' : 'Add Trip'}
               </button>
-              <button onClick={() => { setShowPlanModal(false); setValidationError(null); }}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold transition-colors">
+              <button onClick={() => { setShowPlanModal(false); setValidationError(null); }} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold transition-colors">
                 {t('common.cancel')}
               </button>
             </div>
@@ -665,8 +687,8 @@ function PlanCard({ plan, idx, pList, inspections = [], isRtl, onManage, onReque
         </button>
         {onRequestDelete && (
           isPendingDelete ? (
-            <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-lg font-semibold">
-              ⏳ {isRtl ? 'طلب حذف بانتظار الموافقة' : 'Delete pending approval'}
+            <span className="flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-lg font-semibold w-fit">
+              <Hourglass className="w-3.5 h-3.5" /> {isRtl ? 'طلب حذف بانتظار الموافقة' : 'Delete pending approval'}
             </span>
           ) : (
             <button

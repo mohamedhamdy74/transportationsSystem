@@ -592,6 +592,9 @@ class DatabaseService {
         request_type: 'add_vehicle',
         car_no: plan.plateNumber,
         car_type: plan.carType || 'Microbus',
+        driver_phone: plan.driverPhone || '',
+        gps_username: plan.gpsUsername || '',
+        gps_password: plan.gpsPassword || ''
       });
     }
 
@@ -605,6 +608,7 @@ class DatabaseService {
       carType: plan.carType || 'Microbus',
       plateNumber: plan.plateNumber,
       driverName: plan.driverName || '',
+      driverPhone: plan.driverPhone || '',
       route: plan.route || '',
       passengerQnt: plan.passengerQnt || 0,
       passengers: plan.passengers || JSON.stringify([]),
@@ -616,7 +620,18 @@ class DatabaseService {
 
   async addRequest(req) {
     const id = `req_${Date.now()}`;
-    const newReq = { id, company: req.company, request_type: req.request_type, car_no: req.car_no, car_type: req.car_type || 'Microbus', status: 'pending', created_at: new Date().toISOString() };
+    const newReq = { 
+      id, 
+      company: req.company, 
+      request_type: req.request_type, 
+      car_no: req.car_no, 
+      car_type: req.car_type || 'Microbus', 
+      driver_phone: req.driver_phone || '',
+      gps_username: req.gps_username || '',
+      gps_password: req.gps_password || '',
+      status: 'pending', 
+      created_at: new Date().toISOString() 
+    };
     await this._writeAppwrite('requests', id, newReq);
     return newReq;
   }
@@ -630,7 +645,14 @@ class DatabaseService {
 
     if (status === 'approved') {
       if (req.request_type === 'add_vehicle') {
-        await this.addGpsVehicle({ company: req.company, carNo: req.car_no, carType: req.car_type, comments: 'Running' });
+        await this.addGpsVehicle({ 
+          company: req.company, 
+          carNo: req.car_no, 
+          carType: req.car_type, 
+          username: req.gps_username || '',
+          password: req.gps_password || '',
+          comments: 'Running' 
+        });
         req.status = 'approved';
         await this._writeAppwrite('requests', requestId, req);
         return;

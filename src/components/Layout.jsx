@@ -156,16 +156,15 @@ export default function Layout({ children }) {
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 font-cairo overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
       {sidebarOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 bg-black/40 z-20 md:hidden"
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 md:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
           aria-label="Close menu overlay"
         />
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 z-30 w-64 max-w-[85vw] flex-shrink-0 bg-white border-gray-200 flex flex-col h-full shadow-lg md:shadow-sm transition-transform duration-300 ${
+        className={`fixed md:static inset-y-0 z-30 w-72 max-w-[85vw] flex-shrink-0 bg-white border-gray-200 flex flex-col h-full shadow-2xl md:shadow-sm transition-transform duration-300 ease-in-out ${
           isRtl ? 'right-0 border-l' : 'left-0 border-r'
         } ${
           sidebarOpen
