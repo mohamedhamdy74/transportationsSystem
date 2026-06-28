@@ -613,7 +613,7 @@ export default function AdminDashboard({ defaultTab = 'overview' }) {
               {/* Export Buttons */}
               <div className="flex gap-2 flex-wrap pt-2 border-t border-gray-200">
                 <button
-                  onClick={() => exportPassengersList(filteredPlans, { company: selectedCompany, shift: selectedShift, date: selectedDate })}
+                  onClick={() => exportPassengersList(filteredPlans, { company: selectedCompany, shift: selectedShift, date: selectedDate }, gpsVehicles)}
                   className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-2 rounded-xl text-xs font-medium border border-emerald-200 transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -686,7 +686,7 @@ export default function AdminDashboard({ defaultTab = 'overview' }) {
                                   : 'bg-rose-50 text-rose-700 border-rose-200'
                               }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${v.comments === 'Running' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                {v.carNo} ({v.carType}) — GPS
+                                {v.carNo} ({v.carType}) — 🔑 {v.username} / {v.password}
                                 <button
                                   onClick={() => handleDeleteVehicle(v)}
                                   className="text-rose-500 hover:text-rose-700 p-0.5 rounded transition-colors"
@@ -968,7 +968,10 @@ function AdminPlanCard({ plan, inspections = [], onDeletePassenger, onDeleteVehi
             {!hasInspection && <span className="bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded text-[10px] font-bold">غير مفحوصة</span>}
             {hasInspection && <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-bold">مفحوصة ✓</span>}
           </p>
-          <p className="text-gray-500 mt-1">السائق: <span className="text-indigo-600">{plan.driverName || 'غير مسجل'}</span></p>
+          <p className="text-gray-500 mt-1">
+            السائق: <span className="text-indigo-600">{plan.driverName || 'غير مسجل'}</span>
+            {plan.driverPhone && <span className="mr-2 text-indigo-500 font-mono text-[10px]" dir="ltr">☎ {plan.driverPhone}</span>}
+          </p>
           <p className="text-gray-500 mt-0.5">خط السير: <span className="text-gray-800">{plan.route || 'غير محدد'}</span></p>
         </div>
         <div className="text-left font-mono text-gray-500">

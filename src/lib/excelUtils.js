@@ -72,15 +72,14 @@ export function exportDailyPlans(plans, companyName, date) {
   const headerInfo = [
     [null, title],
     [`- Total Manpower: ${plans.length}`, 'Total Manpower', `[${totalManpower}]`],
-    [],
-    ['Num', 'Type of vehicles', 'Plate number', 'Driver name', 'Route of vehicles', 'Passenger QNT']
+    ['Num', 'Type of vehicles', 'Plate number', 'Driver name', 'Driver phone', 'Route of vehicles', 'Passenger QNT']
   ];
 
-  const dataRows = plans.map((p, idx) => [
     idx + 1,
     p.carType || '',
     p.plateNumber || '',
     p.driverName || '',
+    p.driverPhone || '',
     p.route || '',
     p.passengerQnt || 0
   ]);
@@ -95,7 +94,7 @@ export function exportDailyPlans(plans, companyName, date) {
 
   // Style header row (row index 3)
   const hStyle = headerStyle();
-  for (let C = 0; C < 6; C++) {
+  for (let C = 0; C < 7; C++) {
     const ref = XLSX.utils.encode_cell({ r: 3, c: C });
     if (ws[ref]) ws[ref].s = hStyle;
   }
@@ -195,21 +194,25 @@ export function exportGpsVehicles(vehicles) {
 /**
  * Export Passengers list from filtered daily plans (Admin view)
  */
-export function exportPassengersList(plans, filters = {}) {
+export function exportPassengersList(plans, filters = {}, gpsVehicles = []) {
   const wb = XLSX.utils.book_new();
   const date = new Date().toISOString().slice(0, 10);
 
   // Summary sheet
-  const summaryHeader = ['م', 'الشركة', 'رقم اللوحة', 'نوع السيارة', 'السائق', 'المسار', 'الوردية', 'تاريخ اضافة العربية', 'عدد الركاب'];
+  const summaryHeader = ['م', 'الشركة', 'رقم اللوحة', 'نوع السيارة', 'السائق', 'رقم الهاتف', 'GPS Username', 'GPS Password', 'المسار', 'الوردية', 'تاريخ اضافة العربية', 'عدد الركاب'];
   const summaryRows = plans.map((p, idx) => {
     let passengers = [];
     try { passengers = JSON.parse(p.passengers || '[]'); } catch {}
+    const vehicle = gpsVehicles.find(v => String(v.carNo).trim() === String(p.plateNumber).trim()) || {};
     return [
       idx + 1,
       p.company || '',
       p.plateNumber || '',
       p.carType || '',
       p.driverName || '',
+      p.driverPhone || '',
+      vehicle.username || 'غير متوفر',
+      vehicle.password || 'غير متوفر',
       p.route || '',
       p.shift === 'day' ? 'نهاري ☀️' : 'ليلي 🌙',
       p.date || '',
@@ -222,7 +225,7 @@ export function exportPassengersList(plans, filters = {}) {
     return s + passengers.length;
   }, 0);
   summaryRows.push([]);
-  summaryRows.push(['', '', '', '', '', '', '', 'الإجمالي:', totalPassengers]);
+  summaryRows.push(['', '', '', '', '', '', '', '', '', '', 'الإجمالي:', totalPassengers]);
 
   const wsSummary = XLSX.utils.aoa_to_sheet([summaryHeader, ...summaryRows]);
   applyHeaderStyles(wsSummary, summaryHeader);

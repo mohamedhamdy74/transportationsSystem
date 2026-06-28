@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { db, platesMatch } from '../lib/db.js';
-import { exportDailyPlans, importDailyPlans } from '../lib/excelUtils.js';
+import { exportDailyPlans, importDailyPlans, exportPassengersList } from '../lib/excelUtils.js';
 import PlateInput from '../components/PlateInput.jsx';
 import { useTranslation } from 'react-i18next';
 import {
   Upload, Download, Plus, Users, Car, Sun, Moon, Send, AlertTriangle,
-  CheckCircle2, XCircle, X, Route, User, CalendarDays, Trash2, Hourglass
+  CheckCircle2, XCircle, X, Route, User, CalendarDays, Trash2, Hourglass, Phone, Building2, FileSpreadsheet, Search, Calendar
 } from 'lucide-react';
+import MaskedPassword from '../components/MaskedPassword.jsx';
 
 function PassengerModal({ plan, pendingDeletions, onRequestDelete, onClose, isRtl }) {
   const [passengers, setPassengers] = useState(() => {
@@ -385,6 +386,7 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
                     <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'رقم اللوحة' : 'Plate No.'}</th>
                     <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'نوع السيارة' : 'Car Type'}</th>
                     <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'اليوزرنيم' : 'Username'}</th>
+                    <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'الباسورد' : 'Password'}</th>
                     <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'الحالة' : 'Status'}</th>
                     <th className={`px-4 py-3 ${isRtl ? 'text-right' : 'text-left'}`}>{isRtl ? 'إجراءات' : 'Actions'}</th>
                   </tr>
@@ -397,6 +399,9 @@ export default function CompanyDashboard({ defaultTab = 'daily' }) {
                       <td className="px-4 py-3 text-gray-900 font-bold">{v.carNo}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{v.carType}</td>
                       <td className="px-4 py-3 text-indigo-600 text-xs font-mono">{v.username}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs font-mono">
+                        <MaskedPassword value={v.password} />
+                      </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                           v.comments === 'Running'
@@ -654,6 +659,12 @@ function PlanCard({ plan, idx, pList, inspections = [], isRtl, onManage, onReque
             <User className="w-3.5 h-3.5" />
             {plan.driverName}
           </span>
+          {plan.driverPhone && (
+            <span className="flex items-center gap-1.5 text-indigo-600 font-mono" dir="ltr">
+              <Phone className="w-3.5 h-3.5" />
+              {plan.driverPhone}
+            </span>
+          )}
           <span className="flex items-center gap-1.5">
             <Route className="w-3.5 h-3.5" />
             {plan.route}
